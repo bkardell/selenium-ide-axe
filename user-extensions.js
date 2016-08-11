@@ -2498,7 +2498,7 @@
  * Check if a rule matches the value of runOnly type=tag
  * @private
  * @param  {object} rule
- * @param  {object}	runOnly Value of runOnly with type=tags
+ * @param  {object} runOnly Value of runOnly with type=tags
  * @return {bool}
  */
   function matchTags(rule, runOnly) {
@@ -6826,9 +6826,9 @@ maxstatements: false, maxcomplexity: false */
         /** @type {number} */ this.blue = blue;
         /** @type {number} */ this.alpha = alpha;
         /**
-	 * Provide the hex string value for the color
-	 * @return {string}
-	 */
+   * Provide the hex string value for the color
+   * @return {string}
+   */
         this.toHexString = function() {
           var redString = Math.round(this.red).toString(16);
           var greenString = Math.round(this.green).toString(16);
@@ -6838,9 +6838,9 @@ maxstatements: false, maxcomplexity: false */
         var rgbRegex = /^rgb\((\d+), (\d+), (\d+)\)$/;
         var rgbaRegex = /^rgba\((\d+), (\d+), (\d+), (\d*(\.\d+)?)\)/;
         /**
-	 * Set the color value based on a CSS RGB/RGBA string
-	 * @param  {string}  rgb  The string value
-	 */
+   * Set the color value based on a CSS RGB/RGBA string
+   * @param  {string}  rgb  The string value
+   */
         this.parseRgbString = function(colorString) {
           // IE can pass transparent as value instead of rgba
           if (colorString === "transparent") {
@@ -6868,10 +6868,10 @@ maxstatements: false, maxcomplexity: false */
           }
         };
         /**
-	 * Get the relative luminance value
-	 * using algorithm from http://www.w3.org/WAI/GL/wiki/Relative_luminance
-	 * @return {number} The luminance value, ranges from 0 to 1
-	 */
+   * Get the relative luminance value
+   * using algorithm from http://www.w3.org/WAI/GL/wiki/Relative_luminance
+   * @return {number} The luminance value, ranges from 0 to 1
+   */
         this.getRelativeLuminance = function() {
           var rSRGB = this.red / 255;
           var gSRGB = this.green / 255;
@@ -8078,14 +8078,14 @@ maxstatements: false, maxcomplexity: false */
           return "";
         }
         /**
-	 * Determine the accessible text of an element, using logic from ARIA:
-	 * http://www.w3.org/TR/accname-aam-1.1/#mapping_additional_nd_name
-	 *
-	 * @param {HTMLElement} element The HTMLElement
-	 * @param {Boolean} inLabelledByContext True when in the context of resolving a labelledBy
-	 * @param {Boolean} inControlContext True when in the context of textifying a widget
-	 * @return {string}
-	 */
+   * Determine the accessible text of an element, using logic from ARIA:
+   * http://www.w3.org/TR/accname-aam-1.1/#mapping_additional_nd_name
+   *
+   * @param {HTMLElement} element The HTMLElement
+   * @param {Boolean} inLabelledByContext True when in the context of resolving a labelledBy
+   * @param {Boolean} inControlContext True when in the context of textifying a widget
+   * @return {string}
+   */
         accessibleNameComputation = function accessibleNameComputation(element, inLabelledByContext, inControlContext) {
           "use strict";
           var returnText;
@@ -8199,11 +8199,14 @@ var report = {}
     nextId = 1;
 
 Selenium.prototype.doCheckA11yAndStore = function(locator, value) {
- 	var element = this.page().findElement(locator),
-      label = value || nextId;
+  var element = this.page().findElement(locator),
+      label = value || nextId,
+      url = this.page().currentWindow.location;
   axe.a11yCheck(element, function (results) {
- 		report[value] = results;
- 	});// do axe stuff, assert
+    results.locator = locator;
+    results.url = url;
+    report[value] = results;
+  });// do axe stuff, assert
   nextId++;
 };
 
@@ -8214,26 +8217,39 @@ Selenium.prototype.doVerifyA11yReport = function(locator, value) {
 
 Selenium.prototype.doA11yReportDump = function(locator, value) {
     var label = value || nextId,
-        buff = ['<h1>Report</h1>'];
+        buff = ['<h1>Axe A11Y Reports</h1>'];
 
     Object.keys(report).forEach(function (key) {
-      buff.push('<section style="border: 1px solid gray; margin: 1em;"><h2>' + key + '</h2>');
-
+      buff.push('<section style="border: 1px solid gray; margin: 1em; padding: 1em; "><h2>Report Name:' + key + '</h2>');
+      buff.push('<div><span>url:</span> <em>' + report[key].url+ '</em></div>');
+      buff.push('<div><span>locator checks were run on:</span> <em>' + report[key].locator + '</em></div>');
       report[key].violations.forEach(function (violation) {
-        buff.push('<section><h3>'
+        buff.push('<section style="margin: 2em; border-bottom: 1px solid gray; padding: 1em;"><h3>'
           + violation.description
           + '</h3>'
           + '<span>Impact:</span><span> Critical</span>'
           + '<p>'
           + '<a href="' + violation.helpUrl + '">'
           + violation.help
-          + '</a>'
-          + '<pre>' + JSON.stringify(violation.nodes, null, 4) + '</pre>'
-          + '</p>'
-          + '</section>');
+          + '</a>');
+
+        buff.push('<br><strong>affected:</strong>');
+
+        violation.nodes.forEach(function (node) {
+          buff.push('<table style="margin: 2em">');
+          node.any.forEach(function(data) {
+            buff.push('<tr><td>' + data.message + '</td><td><textarea cols="80" rows="10">' + node.html + '</textarea></td></tr>');
+          });
+          buff.push('</table>');
+        });
+
+        buff.push('</p></section>');
       });
 
       buff.push('</section>');
+
+      // uncomment this to see the raw report object...
+      //buff.push('<textarea>' + JSON.stringify(report, null, 4) + '</textarea>');
     });
 
     this.page().findElement('css=body').innerHTML = buff.join('');
