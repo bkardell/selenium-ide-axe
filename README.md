@@ -6,7 +6,7 @@ Sometimes I use Selenium IDE for writing simple tests because, why not.  You can
 
 Selenium IDE has a plugin/extensions architecture and you can write new extensions.  Just to get the ball rolling I whipped this up quickly as a proof of concept.  Here's how you use it.
 
-Once you have Selenium IDE installed (it's just an add-on for Firefox), you launch it and in the menu go to "Options > Options" and you will see a field for "Selenium Core Extensions (user-extensions.js)".  You pop this file in there and then when you are writing your Selenium tests you have some options...
+Once you have Selenium IDE installed (it's just an add-on for Firefox), you launch it and in the menu go to "Options > Options" (don't ask me, I don't know) and you will see a field for "Selenium Core Extensions (user-extensions.js)".  You pop this file in there and then when you are writing your Selenium tests you have some options...
 
 
 ```javascript
@@ -30,7 +30,8 @@ verifyA11yReport(locator, name)
 /* 
   Since it is helpful to not stop processing the rest of the tests and since those logs are 
   hard to read, yo? you can wait until the end and then call this - it will serialize a little
-  HTML report for you into the browser window it is controlling..
+  HTML report for you of all of the reports into the browser window it is controlling.. 
+  locator and name are just ignored.
 */
-a11yReportDump(locator, name)
+a11yReportDump()
 ```
