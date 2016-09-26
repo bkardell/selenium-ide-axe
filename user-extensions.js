@@ -8205,7 +8205,7 @@ Selenium.prototype.doCheckA11yAndStore = function(locator, value) {
   axe.a11yCheck(element, function (results) {
     results.locator = locator;
     results.url = url;
-    report[value] = results;
+    report[value] = JSON.stringify(results);
   });// do axe stuff, assert
   nextId++;
 };
@@ -8220,10 +8220,11 @@ Selenium.prototype.doA11yReportDump = function(locator, value) {
         buff = ['<h1>Axe A11Y Reports</h1>'];
 
     Object.keys(report).forEach(function (key) {
+      var reported = JSON.parse(report[key]);
       buff.push('<section style="border: 1px solid gray; margin: 1em; padding: 1em; "><h2>Report Name:' + key + '</h2>');
-      buff.push('<div><span>url:</span> <em>' + report[key].url+ '</em></div>');
-      buff.push('<div><span>locator checks were run on:</span> <em>' + report[key].locator + '</em></div>');
-      report[key].violations.forEach(function (violation) {
+      buff.push('<div><span>url:</span> <em>' + reported.url+ '</em></div>');
+      buff.push('<div><span>locator checks were run on:</span> <em>' + reported.locator + '</em></div>');
+      reported.violations.forEach(function (violation) {
         buff.push('<section style="margin: 2em; border-bottom: 1px solid gray; padding: 1em;"><h3>'
           + violation.description
           + '</h3>'
@@ -8254,4 +8255,3 @@ Selenium.prototype.doA11yReportDump = function(locator, value) {
 
     this.page().findElement('css=body').innerHTML = buff.join('');
 };
-
