@@ -8201,7 +8201,7 @@ var report = {}
 Selenium.prototype.doCheckA11yAndStore = function(locator, value) {
   var element = this.page().findElement(locator),
       label = value || nextId,
-      url = this.page().currentWindow.location;
+      url = this.page().currentWindow.location.href;
   axe.a11yCheck(element, function (results) {
     results.locator = locator;
     results.url = url;
@@ -8217,13 +8217,40 @@ Selenium.prototype.doVerifyA11yReport = function(locator, value) {
 
 Selenium.prototype.doA11yReportDump = function(locator, value) {
     var label = value || nextId,
-        buff = ['<h1>Axe A11Y Reports</h1>'];
+        buff = [`
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+
+            <link href="https://cdn.jsdelivr.net/foundation/6.2.0/foundation.min.css" rel="stylesheet" type="text/css">
+
+            <style>
+            .violation, violation li { margin: 0.5rem; padding: 0.5rem; }
+
+            .critical { font-weight: bold; color: red; }
+            .tag { font-size: 0.8rem; background-color: #fcfcfc; border: 1px solid #cccccc; margin-left: 0.25rem; padding: 0 0.5rem; }
+            .nodes, .node { list-style-type: none; margin: 0;  }
+            .node { margin-top: 1rem; padding: 1rem; border: 1px solid gray; }
+            .locator {
+                font-family: monospace
+            }
+            .sample { margin-top: 0; }
+            .sample textarea { width: 50%; display: block; }
+            .violations, .passes { font-weight: bold; }
+            .violations { color: red; }
+            .passes { color: green; }
+            </style>
+        </head>
+        <body>
+        <h1>Axe A11Y Reports</h1>`];
 
     Object.keys(report).forEach(function (key) {
       var reported = JSON.parse(report[key]);
+
       buff.push('<section style="border: 1px solid gray; margin: 1em; padding: 1em; "><h2>Report Name:' + key + '</h2>');
-      buff.push('<div><span>url:</span> <em>' + reported.url+ '</em></div>');
+      buff.push('<div><span>url:</span> <em>' + reported.url + '</em></div>');
       buff.push('<div><span>locator checks were run on:</span> <em>' + reported.locator + '</em></div>');
+      buff.push('<div><span class="violations">' + reported.violations.length + ' violations / </span><span class="passes">' + reported.passes.length + ' passes</span></div>');
       reported.violations.forEach(function (violation) {
         buff.push('<section style="margin: 2em; border-bottom: 1px solid gray; padding: 1em;"><h3>'
           + violation.description
@@ -8252,6 +8279,7 @@ Selenium.prototype.doA11yReportDump = function(locator, value) {
       // uncomment this to see the raw report object...
       //buff.push('<textarea>' + JSON.stringify(report, null, 4) + '</textarea>');
     });
+    buff.push(`</body></html>`)
 
     this.page().findElement('css=body').innerHTML = buff.join('');
 };
