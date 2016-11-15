@@ -1,4 +1,6 @@
-/*! aXe v2.0.7
+
+
+var _initAxe = function (window) { /*! aXe v2.0.7
  * Copyright (c) 2016 Deque Systems, Inc.
  *
  * Your use of this Source Code Form is subject to the terms of the Mozilla Public
@@ -8269,6 +8271,7 @@ maxstatements: false, maxcomplexity: false */
     }()
   });
 })(typeof window === 'object' ? window : this);
+};
 
 /*!
 
@@ -13137,30 +13140,41 @@ module.exports = function (scenarioReport) {
     })
 }
 
-var report = {}
-    nextId = 1;
+        var writer = module.exports,
+            report = {}
+            nextId = 1;
 
-Selenium.prototype.doCheckA11yAndStore = function(locator, value) {
-  var element = this.page().findElement(locator),
-      label = value || nextId,
-      url = this.page().currentWindow.location.href,
-      value = value || 'main';
-  axe.a11yCheck(element, function (results) {
-    results.locator = locator;
-    results.url = url;
-    report[value] = results;
-  });// do axe stuff, assert
-  nextId++;
-};
+        Selenium.prototype.doCheckA11yAndStore = function(locator, value) {
+          var page = this.page(),
+              currentWindow = page.currentWindow,
+              locatorParts = locator.split('='),
+              label = value || nextId,
+              url = currentWindow.location.href,
+              value = value || 'main';
 
-Selenium.prototype.doVerifyA11yReport = function(locator, value) {
-    var label = value || nextId;
-    Assert.equals(0, report[value].violations.length, JSON.stringify(report[label].violations));
-};
+          if (locatorParts[0] === 'id') {
+            element = currentWindow.eval('document.querySelector("#' + locator.split('=')[1] + '")')
+          } else {
+            element = currentWindow.eval('document.querySelector("' + locator.split('=')[1] + '")')
+          }
+          _initAxe(currentWindow)
+
+          currentWindow.axe.a11yCheck(element, function (results) {
+            results.locator = locator;
+            results.url = url;
+            report[value] = results;
+          });// do axe stuff, assert
+          nextId++;
+        };
+
+        Selenium.prototype.doVerifyA11yReport = function(locator, value) {
+            var label = value || nextId;
+            Assert.equals(0, report[value].violations.length, JSON.stringify(report[label].violations));
+        };
 
 
-Selenium.prototype.doA11yReportDump = function(locator, value) {
-    var thePage = this.page().findElement('css=body')
-    thePage.innerHTML = module.exports({ scenario: {}, results: report })
-};
+        Selenium.prototype.doA11yReportDump = function(locator, value) {
+            var thePage = this.page().findElement('css=body')
+            thePage.innerHTML = writer({ scenario: {}, results: report })
+        };
     
